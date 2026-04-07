@@ -1,0 +1,13 @@
+{
+  "name": "clicklogs-firestore-mongo-export",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export": "node export-firestore-to-mongo.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^13.0.0",
+    "mongodb": "^6.11.0"
+  }
+}

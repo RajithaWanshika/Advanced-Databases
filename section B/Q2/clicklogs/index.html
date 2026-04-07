@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+    <title>Tap Logger</title>
+    <link rel="stylesheet" href="index.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:300|Roboto"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Ek+Mukta:300"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!-- Config from .env via PHP: serve this folder with PHP (e.g. php -S localhost:8080). -->
+    <script src="firebase-config.php"></script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+      const c = window.FIREBASE_TAP_LOG_CONFIG;
+      if (!c || !c.apiKey || !c.projectId || !c.appId) {
+        throw new Error(
+          "Firebase config missing. Serve clicklogs with PHP so firebase-config.php can load .env.",
+        );
+      }
+      const firebaseConfig = {
+        apiKey: c.apiKey,
+        authDomain: c.authDomain,
+        projectId: c.projectId,
+        storageBucket: c.storageBucket,
+        messagingSenderId: c.messagingSenderId,
+        appId: c.appId,
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // ── TAP LOGGING STATE ────────────────────────────────────────
+      let totalTouchDuration = 0;
+      let tapCounter = 0;
+      let startTap = 0;
+      let endTap = 0;
+      let tapSessionStartTime = 0;
+      let tapLogsArray = [];
+
+      const tapLimit = 50;
+      let uniqueIdentifier = "";
+      let dependentVariable = ""; // "android" | "pc"
+      let showFeedback = false;
+      let interfaceSequence = 1;
+      const interfaceVariations = 2;
+
+      // ── INITIALISE ON LOAD ──────────────────────────────────────
+      window.onLoad = function () {
+        const d = new Date();
+
+        // Random feedback assignment: even millisecond → show feedback
+        showFeedback = d.getTime() % 2 === 0;
+
+        // Build session identifier: epoch + random suffix
+        const randomSuffix = Math.floor(Math.random() * 42);
+        uniqueIdentifier = d.getTime() + "" + randomSuffix;
+
+        // Attach pointer / touch / mouse listeners to the tap button
+        const el = document.getElementById("tapHere");
+        ["mousedown", "mouseup", "touchstart", "touchend"].forEach((evt) =>
+          el.addEventListener(evt, tapityTap),
+        );
+      };
+
+      // ── DEVICE SELECTION ────────────────────────────────────────
+      window.saveDependentVariable = function (dVariable) {
+        dependentVariable = dVariable;
+        document.getElementById("buttoncontainer").style.display = "none";
+        document.getElementById("container").style.display = "inline-block";
+      };
+
+      // ── TAP EVENT HANDLER ───────────────────────────────────────
+      function tapityTap(tep) {
+        const d = new Date();
+        const te = tep.type;
+
+        document.getElementById("action").innerHTML = te;
+
+        switch (te) {
+          case "touchstart":
+            tep.preventDefault();
+          // fall-through
+          case "mousedown":
+            startTap = d.getTime();
+            if (tapSessionStartTime === 0) tapSessionStartTime = startTap;
+            break;
+
+          case "touchend":
+            tep.preventDefault();
+          // fall-through
+          case "mouseup":
+            endTap = d.getTime();
+            const duration = endTap - startTap;
+
+            // Guard: skip malformed timestamps
+            if (startTap === 0 || endTap === 0 || startTap > endTap) {
+              startTap = endTap = 0;
+              break;
+            }
+
+            tapCounter++;
+            totalTouchDuration += duration;
+            const meanTouchDuration = totalTouchDuration / tapCounter;
+
+            // ── Build tap record (matches Firestore schema) ────────
+            const tapRecord = {
+              // Session context (denormalised for query efficiency)
+              sessionId: uniqueIdentifier,
+              devicePlatform: dependentVariable, // "android" | "pc"
+              interfaceType: showFeedback ? "feedbackshown" : "nofeedback", // indexed field
+              interfaceSequence: interfaceSequence, // 1 or 2
+
+              // Per-tap timing data
+              tapSequenceNumber: tapCounter, // 1 – 50
+              startTimestamp: startTap, // ms epoch
+              endTimestamp: endTap, // ms epoch
+              durationMs: duration, // ms (field name must match Firestore rules)
+
+              // Server-side audit field
+              createdAt: serverTimestamp(),
+            };
+
+            tapLogsArray.push(tapRecord);
+
+            // Live feedback (only in feedbackshown interface)
+            if (showFeedback) {
+              document.getElementById("counter").innerHTML =
+                "Mean tap duration: <span class='spanTime'>" +
+                Math.round(meanTouchDuration) +
+                "</span> ms";
+            }
+
+            // ── Reached 50 taps ───────────────────────────────────
+            if (tapCounter >= tapLimit) {
+              interfaceSequence++;
+              document.getElementById("counter").innerHTML =
+                '<span class="spanWhite">Mean tap duration: <span class="spanTime">' +
+                Math.round(meanTouchDuration) +
+                "</span> ms</span>";
+
+              if (interfaceSequence <= interfaceVariations) {
+                // More variations remain → show Continue button
+                document.getElementById("continue").style.display = "block";
+                document.getElementById("tapHere").style.display = "none";
+              } else {
+                // All variations done → sync everything to Firestore
+                document.getElementById("tapHere").style.display = "none";
+                syncToFirestore();
+              }
+              startTap = endTap = 0;
+              break;
+            }
+
+            startTap = endTap = 0;
+            break;
+        }
+      }
+
+      // ── CONTINUE TO NEXT INTERFACE VARIATION ────────────────────
+      window.startNext = function () {
+        startTap = 0;
+        endTap = 0;
+        tapCounter = 0;
+        totalTouchDuration = 0;
+        tapSessionStartTime = 0;
+        showFeedback = !showFeedback; // flip interface
+
+        document.getElementById("tapHere").style.display = "block";
+        document.getElementById("continue").style.display = "none";
+        document.getElementById("counter").innerHTML = "";
+      };
+
+      // ── WRITE ALL TAP RECORDS TO FIRESTORE ──────────────────────
+      //
+      // Document schema (tap_logs collection):
+      //
+      //  tap_logs/{auto-id}
+      //  ├── sessionId          string   ← indexed (filter by session)
+      //  ├── devicePlatform     string   ← indexed (android | pc)
+      //  ├── interfaceType      string   ← indexed (feedbackshown | nofeedback)
+      //  ├── interfaceSequence  number   (1 | 2)
+      //  ├── tapSequenceNumber  number   (1 – 50)
+      //  ├── startTimestamp     number   ms since epoch
+      //  ├── endTimestamp       number   ms since epoch
+      //  ├── durationMs         number   ← indexed (ms; matches security rules)
+      //  └── createdAt          timestamp
+      //
+      // Design notes
+      //  • Session data is denormalised into each tap document to
+      //    avoid collection-group joins on Firestore.
+      //  • `durationMs` is pre-computed and stored so aggregation
+      //    queries (mean, percentile) can use it directly.
+      //  • Indexing sessionId + interfaceType enables the "completed
+      //    both variations" query efficiently.
+      // ────────────────────────────────────────────────────────────
+      /** Plain objects for saveTaps.php (Firestore serverTimestamp is not JSON-serialisable). */
+      function tapsForPhpBackend() {
+        return tapLogsArray.map(
+          ({
+            sessionId,
+            devicePlatform,
+            interfaceType,
+            interfaceSequence,
+            tapSequenceNumber,
+            startTimestamp,
+            endTimestamp,
+            durationMs,
+          }) => ({
+            sessionId,
+            devicePlatform,
+            interfaceType,
+            interfaceSequence,
+            tapSequenceNumber,
+            startTimestamp,
+            endTimestamp,
+            durationMs,
+          }),
+        );
+      }
+
+      async function postTapsToPhp() {
+        const res = await fetch("saveTaps.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: uniqueIdentifier,
+            devicePlatform: dependentVariable,
+            taps: tapsForPhpBackend(),
+          }),
+        });
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = null;
+        }
+        if (!res.ok || !data || !data.ok) {
+          const msg = data && data.error ? data.error : text || res.statusText;
+          throw new Error("PHP backend: " + msg);
+        }
+        return data;
+      }
+
+      async function syncToFirestore() {
+        const statusEl = document.getElementById("container");
+
+        try {
+          statusEl.innerHTML +=
+            '<br><span class="spanWhite">Saving data…</span>';
+
+          const tapLogsCollection = collection(db, "tap_logs");
+
+          // Firestore + local PHP log (assignment backend); both must succeed
+          await Promise.all([
+            Promise.all(
+              tapLogsArray.map((tap) => addDoc(tapLogsCollection, tap)),
+            ),
+            postTapsToPhp(),
+          ]);
+
+          statusEl.innerHTML +=
+            '<br><span class="spanWhite" style="color:green;">✓ Session saved (Firestore + server log).</span>';
+        } catch (err) {
+          console.error("Save error:", err);
+          statusEl.innerHTML +=
+            '<br><span class="spanWhite" style="color:red;">' +
+            "✗ Save failed. Check console for details.</span>";
+        }
+      }
+    </script>
+  </head>
+
+  <body onload="onLoad()">
+    <div>
+      <!-- Step 1: Device selection -->
+      <div id="buttoncontainer">
+        <p
+          style="color: #1a1a1a; font-family: &quot;Open Sans&quot;, sans-serif"
+        >
+          Select your device type:
+        </p>
+        <button
+          type="button"
+          onclick="saveDependentVariable('android')"
+          id="variable1"
+        >
+          Android
+        </button>
+        <button
+          type="button"
+          onclick="saveDependentVariable('pc')"
+          id="variable2"
+        >
+          PC
+        </button>
+      </div>
+
+      <!-- Step 2: Tap area -->
+      <div id="container" class="container">
+        <div id="counter"></div>
+        <div id="action"></div>
+        <button id="tapHere">
+          <img src="2x/round_touch_app_white_36dp.png" alt="Tap here" />
+        </button>
+        <button id="continue" onclick="startNext()">Continue</button>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,3 @@
+db.tap_logs.aggregate([{$match:{devicePlatform:{$in:["android","pc"]}}},{$group:{_id:"$devicePlatform",meanDurationMs:{$avg:"$durationMs"},tapCount:{$sum:1}}},{$sort:{_id:1}}])
+db.tap_logs.aggregate([{$match:{interfaceType:{$in:["feedbackshown","nofeedback"]}}},{$group:{_id:"$interfaceType",meanDurationMs:{$avg:"$durationMs"},tapCount:{$sum:1}}},{$sort:{_id:1}}])
+db.tap_logs.aggregate([{$group:{_id:"$sessionId",maxSeq:{$max:"$interfaceSequence"}}},{$group:{_id:null,completedBoth:{$sum:{$cond:[{$gte:["$maxSeq",2]},1,0]}},droppedAfterFirst:{$sum:{$cond:[{$lt:["$maxSeq",2]},1,0]}},totalSessions:{$sum:1}}}])

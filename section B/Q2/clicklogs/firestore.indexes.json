@@ -1,0 +1,31 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "tap_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sessionId", "order": "ASCENDING" },
+        { "fieldPath": "interfaceSequence", "order": "ASCENDING" },
+        { "fieldPath": "tapSequenceNumber", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tap_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "devicePlatform", "order": "ASCENDING" },
+        { "fieldPath": "interfaceType", "order": "ASCENDING" },
+        { "fieldPath": "durationMs", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tap_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sessionId", "order": "ASCENDING" },
+        { "fieldPath": "ingestedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

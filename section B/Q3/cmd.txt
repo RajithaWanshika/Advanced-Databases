@@ -1,0 +1,17 @@
+use iitdb
+mongoimport --uri "mongodb+srv://books.sdtk75h.mongodb.net/iitdb" --username xxxxx --password xxxxx --collection books --file books.json
+db.createCollection("books")
+show collections
+db.books.find().pretty()
+db.books.find({ status: "PUBLISH" }, { title: 1, _id: 0 })
+db.books.find({ pageCount: { $gte: 300, $lte: 450 } })
+db.books.find({ pageCount: { $gte: 300, $lte: 450 } }, { title: 1, pageCount: 1, _id: 1 } )
+db.books.find({ pageCount: { $gte: 300, $lte: 450 } }, { title: 1, pageCount: 1, _id: 1 } ).sort({ _id: 1 })
+db.books.countDocuments({ authors: "Robi Sen" })
+db.books.find({ title: /^Mongo/ }, { title: 1, authors: 1, _id: 0 })
+db.books.find({ "categories.0": "Internet" }, { "authors": { $slice: 1 }, title: 1, _id: 0 }).sort({ "authors.0": 1, title: -1 })
+db.books.aggregate([{ $match: { $expr: { $gt: [{ $size: "$authors" }, 4] } } }, { $project: { _id: 0, title: 1, numberOfAuthors: { $size: "$authors" } } }])
+
+db.books.aggregate([{ $match: { status: "PUBLISH" } }, { $unwind: "$categories" }, { $group: { _id: "$categories", count: { $sum: 1 } } }, { $match: { _id: "Internet" } }])
+db.books.aggregate([{ $match: { status: 'PUBLISH' } }, { $unwind: '$categories' }, { $group: { _id: '$categories', bookCount: { $sum: 1 } } }, { $match: { _id: 'Internet' } }, { $project: { category: '$_id', bookCount: 1, _id: 0 } }])
+
