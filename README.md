@@ -9,7 +9,7 @@ Coursework and exercises for **CMM702 Advanced Databases** (IIT / MSc). This rep
 | `section B/Q2/clicklogs/` | Click-logging web app (`index.html`, `index.css`), PHP backend (`saveTaps.php`), Firebase/Firestore config |
 | `section B/Q2/clicklogs/scripts/` | Node script to export Firestore `tap_logs` → MongoDB |
 | `section B/Q2/clicklogs/scripts/README.md` | **Q2** brief + MongoDB commands for analytics (4a–c) |
-| `section B/Q2/clicklogs/scripts/cmd.txt` | One-line aggregations (same as `commands.md`) |
+| `section B/Q2/clicklogs/scripts/cmd.txt` | One-line aggregations (same content as `section B/Q2/clicklogs/scripts/README.md`) |
 | `section B/Q3/README.md` | **Q3** brief + requirement-mapped **`mongoimport` / `mongosh`** commands |
 | `section B/Q3/cmd.txt` | Compact **`mongoimport`** and query one-liners |
 | `books.json` | Sample books dataset for MongoDB import (used with Q3) |
@@ -17,8 +17,8 @@ Coursework and exercises for **CMM702 Advanced Databases** (IIT / MSc). This rep
 
 ## Assessment alignment
 
-- **Question 2 [LO2, LO3, LO4]** — click logging: `saveTaps.php`, Firestore **`tap_logs`**, hosting (e.g. GitHub Pages), MongoDB analytics. Full brief and **single-query** aggregations for parts 4a–c: [`section B/Q2/clicklogs/scripts/README.md`](section%20B/Q2/clicklogs/scripts/commands.md).
-- **Question 3 [LO4]** — load **`books.json`** into **`iitdb.books`**, eight numbered requirements (one query each), screenshots in your submission. Commands mapped to each requirement: [`section B/Q3/commands.md`](section%20B/Q3/commands.md).
+- **Question 2 [LO2, LO3, LO4]** — click logging: `saveTaps.php`, Firestore **`tap_logs`**, hosting (e.g. GitHub Pages), MongoDB analytics. Full brief and **single-query** aggregations for parts 4a–c: [`section B/Q2/clicklogs/scripts/README.md`](section%20B/Q2/clicklogs/scripts/README.md).
+- **Question 3 [LO4]** — load **`books.json`** into **`iitdb.books`**, eight numbered requirements (one query each), screenshots in your submission. Commands mapped to each requirement: [`section B/Q3/README.md`](section%20B/Q3/README.md).
 
 ## Section B — Q2: Click logging
 
@@ -52,7 +52,7 @@ The script reads all documents from the Firestore collection **`tap_logs`** and 
 
 ## Section B — Q3: MongoDB (`books`)
 
-1. Follow **`section B/Q3/commands.md`** for Question 3 requirements 1–8 (load + queries + aggregations) and submission notes (screenshots, viva).
+1. Follow **`section B/Q3/README.md`** for Question 3 requirements 1–8 (load + queries + aggregations) and submission notes (screenshots, viva).
 2. Quick import example (adjust URI and credentials):
 
    ```bash
