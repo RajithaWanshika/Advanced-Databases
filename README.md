@@ -8,16 +8,16 @@ Coursework and exercises for **CMM702 Advanced Databases** (IIT / MSc). This rep
 |------|----------|
 | `section B/Q2/clicklogs/` | Click-logging web app (`index.html`, `index.css`), PHP backend (`saveTaps.php`), Firebase/Firestore config |
 | `section B/Q2/clicklogs/scripts/` | Node script to export Firestore `tap_logs` → MongoDB |
-| `section B/Q2/clicklogs/scripts/commands.md` | **Q2** brief + MongoDB commands for analytics (4a–c) |
+| `section B/Q2/clicklogs/scripts/README.md` | **Q2** brief + MongoDB commands for analytics (4a–c) |
 | `section B/Q2/clicklogs/scripts/cmd.txt` | One-line aggregations (same as `commands.md`) |
-| `section B/Q3/commands.md` | **Q3** brief + requirement-mapped **`mongoimport` / `mongosh`** commands |
+| `section B/Q3/README.md` | **Q3** brief + requirement-mapped **`mongoimport` / `mongosh`** commands |
 | `section B/Q3/cmd.txt` | Compact **`mongoimport`** and query one-liners |
 | `books.json` | Sample books dataset for MongoDB import (used with Q3) |
 | `CMM702 Advanced Databases Assessment-2026.pdf` | Module assessment brief (if present locally) |
 
 ## Assessment alignment
 
-- **Question 2 [LO2, LO3, LO4]** — click logging: `saveTaps.php`, Firestore **`tap_logs`**, hosting (e.g. GitHub Pages), MongoDB analytics. Full brief and **single-query** aggregations for parts 4a–c: [`section B/Q2/clicklogs/scripts/commands.md`](section%20B/Q2/clicklogs/scripts/commands.md).
+- **Question 2 [LO2, LO3, LO4]** — click logging: `saveTaps.php`, Firestore **`tap_logs`**, hosting (e.g. GitHub Pages), MongoDB analytics. Full brief and **single-query** aggregations for parts 4a–c: [`section B/Q2/clicklogs/scripts/README.md`](section%20B/Q2/clicklogs/scripts/commands.md).
 - **Question 3 [LO4]** — load **`books.json`** into **`iitdb.books`**, eight numbered requirements (one query each), screenshots in your submission. Commands mapped to each requirement: [`section B/Q3/commands.md`](section%20B/Q3/commands.md).
 
 ## Section B — Q2: Click logging
@@ -48,7 +48,7 @@ Configure `section B/Q2/clicklogs/.env` (file is gitignored). Typical variables:
 
 The script reads all documents from the Firestore collection **`tap_logs`** and **upserts** them into MongoDB (matched on `firestoreId`).
 
-**Analytics:** see [`section B/Q2/clicklogs/scripts/commands.md`](section%20B/Q2/clicklogs/scripts/commands.md) (assessment wording + queries) or `cmd.txt` for one-liners.
+**Analytics:** see [`section B/Q2/clicklogs/scripts/README.md`](section%20B/Q2/clicklogs/scripts/README.md) (assessment wording + queries) or `cmd.txt` for one-liners.
 
 ## Section B — Q3: MongoDB (`books`)
 
