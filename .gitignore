@@ -1,3 +1,5 @@
+.venv/
+venv/
 section B/Q2/clicklogs/.env
 section B/Q2/clicklogs/data/
 section B/Q2/clicklogs/scripts/*firebase-adminsdk*.json

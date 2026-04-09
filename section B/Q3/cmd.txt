@@ -14,4 +14,4 @@ db.books.aggregate([{ $match: { $expr: { $gt: [{ $size: "$authors" }, 4] } } }, 
 
 db.books.aggregate([{ $match: { status: "PUBLISH" } }, { $unwind: "$categories" }, { $group: { _id: "$categories", count: { $sum: 1 } } }, { $match: { _id: "Internet" } }])
 db.books.aggregate([{ $match: { status: 'PUBLISH' } }, { $unwind: '$categories' }, { $group: { _id: '$categories', bookCount: { $sum: 1 } } }, { $match: { _id: 'Internet' } }, { $project: { category: '$_id', bookCount: 1, _id: 0 } }])
-
+db.books.aggregate([ { $match: { status: "PUBLISH" } }, { $unwind: "$categories" }, { $group: { _id: "$categories", bookCount: { $sum: 1 } } }, { $facet: { publishedBooksPerCategory: [{ $sort: { _id: 1 } }], internetCategory: [{ $match: { _id: "Internet" } }] } }])
