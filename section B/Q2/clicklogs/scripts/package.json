@@ -3,7 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "export": "node export-firestore-to-mongo.mjs"
+    "export": "node export-firestore-to-mongo.mjs",
+    "analytics:4a": "node analytics/q4a.js",
+    "analytics:4b": "node analytics/q4b.js",
+    "analytics:4c": "node analytics/q4c.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

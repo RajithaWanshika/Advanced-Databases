@@ -25,6 +25,14 @@
         { "fieldPath": "sessionId", "order": "ASCENDING" },
         { "fieldPath": "ingestedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "tap_logs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "sessionId", "order": "ASCENDING" },
+        { "fieldPath": "interfaceSequence", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
