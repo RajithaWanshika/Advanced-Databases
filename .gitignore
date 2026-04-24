@@ -8,3 +8,4 @@ section B/Q2/clicklogs/*firebase-adminsdk*.json
 *.log
 *.env
 *.svg
+*.rules
